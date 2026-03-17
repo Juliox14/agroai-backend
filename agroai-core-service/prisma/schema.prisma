@@ -1,0 +1,68 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Get a free hosted Postgres database in seconds: `npx create-db`
+
+generator client {
+  provider = "prisma-client"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+
+// 1. El Agricultor / Investigador
+model Usuario {
+  id             String    @id @default(uuid())
+  nombre         String
+  email          String    @unique
+  password_hash  String
+  fecha_creacion DateTime  @default(now())
+
+  // Relación: Un usuario administra varias parcelas
+  parcelas       Parcela[] 
+}
+
+// 2. La agrupación física (ej. "Invernadero Norte")
+model Parcela {
+  id          String   @id @default(uuid())
+  nombre      String   
+  descripcion String?
+  usuarioId   String
+
+  // Relación: Pertenece a un Usuario
+  usuario     Usuario  @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+  
+  // Relación: Contiene muchas plantas
+  plantas     Planta[] 
+}
+
+// 3. El cultivo individual dentro de la parcela
+model Planta {
+  id            String   @id @default(uuid())
+  identificador String   
+  tipo          String   
+  fecha_siembra DateTime?
+  parcelaId     String
+
+  // Relación: Pertenece a una Parcela
+  parcela       Parcela  @relation(fields: [parcelaId], references: [id], onDelete: Cascade)
+  
+  // Relación: Tiene un historial de análisis NDVI
+  registros     RegistroMultiespectral[]
+}
+
+// 4. El historial de capturas
+model RegistroMultiespectral {
+  id            String   @id @default(uuid())
+  ndvi_valor    Float    
+  s3_imagen_url String   
+  datos_extra   Json?    
+  fecha_captura DateTime @default(now())
+  plantaId      String
+
+  // Relación: Pertenece a una Planta específica
+  planta        Planta   @relation(fields: [plantaId], references: [id], onDelete: Cascade)
+}
