@@ -19,21 +19,32 @@ export const fetchWeather = async (lat: number, lon: number) => {
   }
 
   const response = await axios.get(
-    `https://api.open-meteo.com/v1/forecast`,
+    "https://api.open-meteo.com/v1/forecast",
     {
       params: {
         latitude: lat,
         longitude: lon,
-        current_weather: true
+        current_weather: true,
+        daily: "temperature_2m_max,temperature_2m_min,precipitation_sum",
+        timezone: "auto"
       }
     }
   )
 
-  cache.set(key, response.data)
+  const weather = {
+    temperature: response.data.current_weather.temperature,
+    wind_speed: response.data.current_weather.windspeed,
+    time: response.data.current_weather.time,
+    precipitation: response.data.daily.precipitation_sum[0],
+    temp_max: response.data.daily.temperature_2m_max[0],
+    temp_min: response.data.daily.temperature_2m_min[0]
+  }
+
+  cache.set(key, weather)
 
   return {
     source: "api",
-    data: response.data
+    data: weather
   }
 
 }
