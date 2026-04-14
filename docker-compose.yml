@@ -12,18 +12,71 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
 
-  mongo_db:
-    image: mongo:6.0
-    container_name: agroai_mongo
-    restart: always
-    environment:
-      MONGO_INITDB_ROOT_USERNAME: ${MONGO_USER}
-      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_PASSWORD}
+  mongo1:
+    image: mongo:7.0
+    container_name: agroai-mongo-primary
+    command: ["--replSet", "agroai-rs", "--bind_ip_all", "--port", "27017"]
     ports:
-      - "27017:27017"
+      - "27018:27017" # 🟢 Cambiamos el 27017 de la izquierda por 27020
     volumes:
-      - mongo_data:/data/db
+      - mongo1_data:/data/db
+    restart: always
+
+  mongo2:
+    image: mongo:7.0
+    container_name: agroai-mongo-sec-1
+    command: ["--replSet", "agroai-rs", "--bind_ip_all", "--port", "27017"]
+    ports:
+      - "27019:27017"
+    volumes:
+      - mongo2_data:/data/db
+    restart: always
+
+  mongo3:
+    image: mongo:7.0
+    container_name: agroai-mongo-sec-2
+    command: ["--replSet", "agroai-rs", "--bind_ip_all", "--port", "27017"]
+    ports:
+      - "27020:27017"
+    volumes:
+      - mongo3_data:/data/db
+    restart: always
+
+  core-service:
+    build: ./core-service
+    ports:
+      - "3000:3000"
+    environment:
+      - DATABASE_URL=postgresql://admin:agro_jc_ai@postgres_db:5432/agroai_core?schema=public
+      - FORENSIC_SERVICE_URL=http://forensic-service:4000
+    depends_on:
+      - postgres_db
+      - forensic-service
+
+  forensic-service:
+    build: ./forensic-service
+    ports:
+      - "4000:4000"
+    environment:
+      - MONGO_URI=mongodb://mongo1:27017,mongo2:27017,mongo3:27017/agroai_forensics?replicaSet=agroai-rs
+    depends_on:
+      - mongo1
+
+
+  # mobile-app:
+  #   build: ../agroai-app
+  #   ports:
+  #     - "8081:8081"
+  #   environment:
+  #     - EXPO_PUBLIC_API_URL=http://localhost:3000
+  #   stdin_open: true 
+  #   tty: true
 
 volumes:
   postgres_data:
-  mongo_data:
+  mongo1_data:
+  mongo2_data:
+  mongo3_data:
+
+
+  

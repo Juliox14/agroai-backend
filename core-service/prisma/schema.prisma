@@ -1,0 +1,60 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Get a free hosted Postgres database in seconds: `npx create-db`
+
+generator client {
+  provider = "prisma-client"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// 1. El Productor / Campesino
+model Usuario {
+  id             String    @id @default(uuid())
+  nombre         String
+  email          String    @unique
+  password_hash  String
+  fecha_creacion DateTime  @default(now())
+
+  // Relación: Un productor tiene varias parcelas
+  parcelas       Parcela[] 
+}
+
+// 2. La unidad de producción tradicional (La Parcela / Terreno)
+model Parcela {
+  id                String    @id @default(uuid())
+  nombre            String    // ej. "Milpa del río", "Terreno de arriba"
+  comunidad_ejido   String?   // Dato clave para ubicación rural
+  
+  // Tamaño más flexible (los pequeños productores suelen usar m2 o fracciones de hectárea)
+  area_metros_cuadrados Float? 
+  
+  // En lugar de una "especie", usamos el sistema de cultivo
+  tipo_sistema      String    // ej. "Milpa tradicional", "Cafetal con sombra", "Huerto de traspatio"
+  cultivos_asociados String   // ej. "Maíz blanco, frijol y calabaza"
+  
+  // Detalles del entorno rural
+  tipo_riego        String    @default("Temporal") // Por defecto "Temporal" (depende de la lluvia)
+  fecha_siembra     DateTime? 
+  
+  usuarioId         String
+  usuario           Usuario   @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+  
+  registros         RegistroMultiespectral[]
+}
+
+// 3. El historial de capturas de la Raspberry
+model RegistroMultiespectral {
+  id            String   @id @default(uuid())
+  ndvi_promedio Float    // Salud vegetal promedio de la toma
+  s3_imagen_url String   
+  datos_extra   Json?    // Ej. Humedad de la tierra en ese momento
+  fecha_captura DateTime @default(now())
+  
+  parcelaId     String
+  parcela       Parcela  @relation(fields: [parcelaId], references: [id], onDelete: Cascade)
+}
