@@ -17,7 +17,7 @@ services:
     container_name: agroai-mongo-primary
     command: ["--replSet", "agroai-rs", "--bind_ip_all", "--port", "27017"]
     ports:
-      - "27018:27017" # 🟢 Cambiamos el 27017 de la izquierda por 27020
+      - "27018:27017"
     volumes:
       - mongo1_data:/data/db
     restart: always
@@ -61,22 +61,20 @@ services:
       - MONGO_URI=mongodb://mongo1:27017,mongo2:27017,mongo3:27017/agroai_forensics?replicaSet=agroai-rs
     depends_on:
       - mongo1
-
-
-  # mobile-app:
-  #   build: ../agroai-app
-  #   ports:
-  #     - "8081:8081"
-  #   environment:
-  #     - EXPO_PUBLIC_API_URL=http://localhost:3000
-  #   stdin_open: true 
-  #   tty: true
+  
+  weather-service:
+    build: 
+      context: ./agroai-weather-service
+      dockerfile: Dockerfile
+    container_name: agroai-weather-service
+    environment:
+      - PORT=4001
+    ports:
+      - "4001:4001"
+    restart: unless-stopped
 
 volumes:
   postgres_data:
   mongo1_data:
   mongo2_data:
   mongo3_data:
-
-
-  
