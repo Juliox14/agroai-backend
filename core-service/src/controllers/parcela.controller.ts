@@ -88,3 +88,55 @@ export const crearParcela = async (req: AuthRequest, res: Response) => {
   }
 };
 
+export const obtenerEstadisticas = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+
+    const registros = await prisma.registroMultiespectral.findMany({
+      where: { parcelaId: id },
+      orderBy: { fecha_captura: 'asc' }
+    });
+
+    if (!registros || registros.length === 0) {
+      return res.status(200).json({ 
+        success: true, 
+        data: {
+          historial: [],
+          ultimo_ndvi: 0,
+          progreso: 0,
+          total_analisis: 0
+        } 
+      });
+    }
+
+    const total_analisis = registros.length;
+    const ultimo_registro = registros[registros.length - 1];
+    const ultimo_ndvi = ultimo_registro.ndvi_promedio;
+    
+    let progreso = 0;
+    if (registros.length > 1) {
+      const penultimo_registro = registros[registros.length - 2];
+      const penultimo_ndvi = penultimo_registro.ndvi_promedio;
+      // Calculate percentage change
+      if (penultimo_ndvi !== 0) {
+        progreso = ((ultimo_ndvi - penultimo_ndvi) / Math.abs(penultimo_ndvi)) * 100;
+      }
+    }
+
+    res.status(200).json({ 
+      success: true, 
+      data: {
+        historial: registros.map((r: any) => ({
+          valor: r.ndvi_promedio,
+          fecha: r.fecha_captura
+        })),
+        ultimo_ndvi: parseFloat(ultimo_ndvi.toFixed(2)),
+        progreso: parseFloat(progreso.toFixed(1)),
+        total_analisis
+      } 
+    });
+  } catch (error) {
+    console.error('Error al obtener estadísticas:', error);
+    res.status(500).json({ success: false, message: 'Error interno del servidor al cargar estadísticas' });
+  }
+};
