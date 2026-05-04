@@ -46,9 +46,8 @@ services:
     build: ./core-service
     ports:
       - "3000:3000"
-    environment:
-      - DATABASE_URL=postgresql://admin:agro_jc_ai@postgres_db:5432/agroai_core?schema=public
-      - FORENSIC_SERVICE_URL=http://forensic-service:4000
+    env_file:
+      - ./core-service/.env # 🟢 Docker leerá todo lo que esté en ese archivo
     depends_on:
       - postgres_db
       - forensic-service
@@ -57,18 +56,18 @@ services:
     build: ./forensic-service
     ports:
       - "4000:4000"
-    environment:
-      - MONGO_URI=mongodb://mongo1:27017,mongo2:27017,mongo3:27017/agroai_forensics?replicaSet=agroai-rs
+    env_file:
+      - ./forensic-service/.env
     depends_on:
       - mongo1
   
   weather-service:
     build: 
-      context: ./agroai-weather-service
+      context: ./weather-service
       dockerfile: Dockerfile
-    container_name: agroai-weather-service
-    environment:
-      - PORT=4001
+    container_name: weather-service
+    env_file:
+      - ./weather-service/.env
     ports:
       - "4001:4001"
     restart: unless-stopped

@@ -40,6 +40,7 @@ model Parcela {
   // Detalles del entorno rural
   tipo_riego        String    @default("Temporal") // Por defecto "Temporal" (depende de la lluvia)
   fecha_siembra     DateTime? 
+  imagen_url        String?
   
   usuarioId         String
   usuario           Usuario   @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
@@ -51,7 +52,7 @@ model Parcela {
 model RegistroMultiespectral {
   id            String   @id @default(uuid())
   ndvi_promedio Float    // Salud vegetal promedio de la toma
-  s3_imagen_url String   
+  imagen_url String   
   datos_extra   Json?    // Ej. Humedad de la tierra en ese momento
   fecha_captura DateTime @default(now())
   
