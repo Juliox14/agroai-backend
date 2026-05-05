@@ -27,7 +27,7 @@ app.use('/api/auth', authRoutes);
 
 app.use('/api/parcelas', parcelaRoutes);
 
-app.listen(PORT, () => {
-  console.log(`[AgroAI-Core] Servidor corriendo en http://localhost:${PORT}`);
+app.listen(Number(PORT), '0.0.0.0', () => {
+  console.log(`[AgroAI-Core] Servidor corriendo en http://0.0.0.0:${PORT}`);
 });
 
