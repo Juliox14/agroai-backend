@@ -44,11 +44,10 @@ services:
 
   core-service:
     build: ./core-service
-    ports:
+    ports: 
       - "3000:3000"
-    environment:
-      - DATABASE_URL=postgresql://admin:agro_jc_ai@postgres_db:5432/agroai_core?schema=public
-      - FORENSIC_SERVICE_URL=http://forensic-service:4000
+    env_file:
+      - ./core-service/.env # 🟢 Docker leerá todo lo que esté en ese archivo
     depends_on:
       - postgres_db
       - forensic-service
