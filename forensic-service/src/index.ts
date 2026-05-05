@@ -19,7 +19,7 @@ app.post('/api/logs', async (req: Request, res: Response): Promise<void> => {
     try {
         const data = req.body;
         
-        // Cumpliendo el requerimiento: Usar UTC y formato ISO 8601
+        // Usar UTC y formato ISO 8601
         const timestampISO = new Date().toISOString();
 
         // 2. CREAR EL DOCUMENTO USANDO MONGOOSE (Antes era un objeto JavaScript normal)

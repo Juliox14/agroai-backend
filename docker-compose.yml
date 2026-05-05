@@ -1,16 +1,16 @@
 services:
-  postgres_db:
-    image: postgres:15-alpine
-    container_name: agroai_postgres
-    restart: always
-    environment:
-      POSTGRES_USER: ${POSTGRES_USER}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-      POSTGRES_DB: ${POSTGRES_DB}
-    ports:
-      - "5432:5432"
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
+  # postgres_db:
+  #   image: postgres:15-alpine
+  #   container_name: agroai_postgres
+  #   restart: always
+  #   environment:
+  #     POSTGRES_USER: ${POSTGRES_USER}
+  #     POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+  #     POSTGRES_DB: ${POSTGRES_DB}
+  #   ports:
+  #     - "5432:5432"
+  #   volumes:
+  #     - postgres_data:/var/lib/postgresql/data
 
   mongo1:
     image: mongo:7.0
@@ -49,7 +49,6 @@ services:
     env_file:
       - ./core-service/.env # 🟢 Docker leerá todo lo que esté en ese archivo
     depends_on:
-      - postgres_db
       - forensic-service
 
   forensic-service:
@@ -73,7 +72,6 @@ services:
     restart: unless-stopped
 
 volumes:
-  postgres_data:
   mongo1_data:
   mongo2_data:
   mongo3_data:
