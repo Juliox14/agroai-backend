@@ -1,16 +1,16 @@
 services:
-  postgres_db:
-    image: postgres:15-alpine
-    container_name: agroai_postgres
-    restart: always
-    environment:
-      POSTGRES_USER: ${POSTGRES_USER}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-      POSTGRES_DB: ${POSTGRES_DB}
-    ports:
-      - "5432:5432"
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
+  # postgres_db:
+  #   image: postgres:15-alpine
+  #   container_name: agroai_postgres
+  #   restart: always
+  #   environment:
+  #     POSTGRES_USER: ${POSTGRES_USER}
+  #     POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+  #     POSTGRES_DB: ${POSTGRES_DB}
+  #   ports:
+  #     - "5432:5432"
+  #   volumes:
+  #     - postgres_data:/var/lib/postgresql/data
 
   mongo1:
     image: mongo:7.0
@@ -49,31 +49,29 @@ services:
     env_file:
       - ./core-service/.env # 🟢 Docker leerá todo lo que esté en ese archivo
     depends_on:
-      - postgres_db
       - forensic-service
 
   forensic-service:
     build: ./forensic-service
     ports:
       - "4000:4000"
-    environment:
-      - MONGO_URI=mongodb://mongo1:27017,mongo2:27017,mongo3:27017/agroai_forensics?replicaSet=agroai-rs
+    env_file:
+      - ./forensic-service/.env
     depends_on:
       - mongo1
   
   weather-service:
     build: 
-      context: ./agroai-weather-service
+      context: ./weather-service
       dockerfile: Dockerfile
-    container_name: agroai-weather-service
-    environment:
-      - PORT=4001
+    container_name: weather-service
+    env_file:
+      - ./weather-service/.env
     ports:
       - "4001:4001"
     restart: unless-stopped
 
 volumes:
-  postgres_data:
   mongo1_data:
   mongo2_data:
   mongo3_data:

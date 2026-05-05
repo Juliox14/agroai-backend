@@ -18,8 +18,7 @@ export const verificarToken = (req: AuthRequest, res: Response, next: NextFuncti
     }
 
     try {
-        const payload = jwt.verify(token, process.env.JWT_SECRET as string) as AuthRequest['usuario'];
-        console.log("PAYLOAD DEL TOKEN:", payload);        
+        const payload = jwt.verify(token, process.env.JWT_SECRET as string) as AuthRequest['usuario'];      
         req.usuario = payload;
         next();
     } catch (error) {

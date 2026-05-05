@@ -19,6 +19,6 @@ app.get("/api/health", (req, res) => {
 
 app.use("/api/weather", weatherRoutes)
 
-app.listen(PORT, () => {
+app.listen(PORT as number, '0.0.0.0', () => {
   console.log(`Weather service running on port ${PORT}`)
 })
