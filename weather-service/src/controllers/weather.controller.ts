@@ -12,16 +12,23 @@ export const getWeather = async (req: Request, res: Response) => {
   }
 
   try {
+    const parseCoord = (val: any) => Number(String(val).replace(',', '.'));
+    const parsedLat = parseCoord(lat);
+    const parsedLon = parseCoord(lon);
+
+    if (isNaN(parsedLat) || isNaN(parsedLon)) {
+      return res.status(400).json({ error: "Coordenadas inválidas (NaN)" });
+    }
 
     const data = await fetchWeather(
-      Number(lat),
-      Number(lon)
+      parsedLat,
+      parsedLon
     )
 
     res.json(data)
 
   } catch (error) {
-
+    console.error("Error en weather controller:", error);
     res.status(500).json({
       error: "Error obteniendo clima"
     })
