@@ -1,7 +1,5 @@
 import { Request, Response } from 'express';
 import { prisma } from '../../lib/prisma.js';
-import { AuthRequest } from '../middlewares/auth.middleware.js';
-
 import { subirImagenCloudinary } from '../cloudinary/uploadService.js';
 
 type AuthenticatedRequest = Request & {

@@ -33,6 +33,8 @@ app.get('/api/logs', async (_req: Request, res: Response) => {
 app.post('/api/logs', async (req: Request, res: Response): Promise<void> => {
     try {
         const data = req.body;
+        
+        // Usar UTC y formato ISO 8601
         const timestampISO = new Date().toISOString();
 
         const nuevoLog = new LogForense({
