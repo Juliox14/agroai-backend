@@ -101,7 +101,12 @@ export const crearParcela = async (req: AuthenticatedRequest, res: Response) => 
   }
 };
 
-export const actualizarParcela = async (req: AuthRequest, res: Response) => {
+export const actualizarParcela = async (req: AuthenticatedRequest, res: Response) => {
+
+  console.log('req.body:', req.body);
+  console.log('req.file:', req.file);
+  console.log('Content-Type:', req.headers['content-type']);
+
   try {
     const { id } = req.params;
     const usuarioId = req.usuario?.id;
@@ -111,9 +116,7 @@ export const actualizarParcela = async (req: AuthRequest, res: Response) => {
     }
 
     // Verificar que la parcela pertenece al usuario
-    const parcela = await prisma.parcela.findUnique({
-      where: { id }
-    });
+    const parcela = await prisma.parcela.findUnique({ where: { id } });
 
     if (!parcela) {
       return res.status(404).json({ success: false, message: 'Parcela no encontrada' });
@@ -133,16 +136,25 @@ export const actualizarParcela = async (req: AuthRequest, res: Response) => {
       fecha_siembra,
     } = req.body;
 
+    // Subir imagen a Cloudinary si viene en el request
+    let imagen_url: string | undefined;
+    if (req.file) {
+      imagen_url = await subirImagenCloudinary(req.file.buffer, 'parcelas');
+    }
+
     const parcelaActualizada = await prisma.parcela.update({
       where: { id },
       data: {
-        ...(nombre              && { nombre }),
-        ...(comunidad_ejido     && { comunidad_ejido }),
-        ...(area_metros_cuadrados !== undefined && { area_metros_cuadrados: area_metros_cuadrados ? parseFloat(area_metros_cuadrados) : null }),
-        ...(tipo_sistema        && { tipo_sistema }),
-        ...(cultivos_asociados  && { cultivos_asociados }),
-        ...(tipo_riego          && { tipo_riego }),
-        ...(fecha_siembra       && { fecha_siembra: new Date(fecha_siembra) }),
+        ...(nombre             && { nombre }),
+        ...(comunidad_ejido    && { comunidad_ejido }),
+        ...(area_metros_cuadrados !== undefined && {
+          area_metros_cuadrados: area_metros_cuadrados ? parseFloat(area_metros_cuadrados) : null
+        }),
+        ...(tipo_sistema       && { tipo_sistema }),
+        ...(cultivos_asociados && { cultivos_asociados }),
+        ...(tipo_riego         && { tipo_riego }),
+        ...(fecha_siembra      && { fecha_siembra: new Date(fecha_siembra) }),
+        ...(imagen_url         && { imagen_url }),
       }
     });
 
@@ -202,5 +214,33 @@ export const obtenerEstadisticas = async (req: Request, res: Response) => {
   } catch (error) {
     console.error('Error al obtener estadísticas:', error);
     res.status(500).json({ success: false, message: 'Error interno del servidor al cargar estadísticas' });
+  }
+};
+
+export const eliminarParcela = async (req: AuthenticatedRequest, res: Response) => {
+  try {
+    const { id } = req.params;
+    const usuarioId = req.usuario?.id;
+
+    if (!usuarioId) {
+      return res.status(401).json({ success: false, message: 'Usuario no autenticado' });
+    }
+
+    const parcela = await prisma.parcela.findUnique({ where: { id } });
+
+    if (!parcela) {
+      return res.status(404).json({ success: false, message: 'Parcela no encontrada' });
+    }
+
+    if (parcela.usuarioId !== usuarioId) {
+      return res.status(403).json({ success: false, message: 'No tienes permiso para eliminar esta parcela' });
+    }
+
+    await prisma.parcela.delete({ where: { id } });
+
+    res.status(200).json({ success: true, message: 'Parcela eliminada correctamente' });
+  } catch (error) {
+    console.error('[eliminarParcela]', error);
+    res.status(500).json({ success: false, message: 'Error al eliminar la parcela' });
   }
 };
