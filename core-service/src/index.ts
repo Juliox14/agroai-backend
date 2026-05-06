@@ -4,6 +4,7 @@ import 'dotenv/config';
 import { prisma } from '../lib/prisma.js';
 import authRoutes from './routes/auth.routes.js';
 import parcelaRoutes from './routes/parcela.routes.js';
+import ndviRoutes from './routes/ndvi.routes.js';
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -26,6 +27,8 @@ app.get('/api/health', async (req: Request, res: Response) => {
 app.use('/api/auth', authRoutes);
 
 app.use('/api/parcelas', parcelaRoutes);
+
+app.use('/api/ndvi', ndviRoutes);
 
 app.listen(Number(PORT), '0.0.0.0', () => {
   console.log(`[AgroAI-Core] Servidor corriendo en http://0.0.0.0:${PORT}`);
