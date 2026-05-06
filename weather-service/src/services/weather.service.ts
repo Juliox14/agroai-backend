@@ -24,7 +24,7 @@ export const fetchWeather = async (lat: number, lon: number) => {
       params: {
         latitude: lat,
         longitude: lon,
-        current_weather: true,
+        current: "temperature_2m,relative_humidity_2m,precipitation,wind_speed_10m",
         daily: "temperature_2m_max,temperature_2m_min,precipitation_sum",
         timezone: "auto"
       }
@@ -32,12 +32,13 @@ export const fetchWeather = async (lat: number, lon: number) => {
   )
 
   const weather = {
-    temperature: response.data.current_weather.temperature,
-    wind_speed: response.data.current_weather.windspeed,
-    time: response.data.current_weather.time,
+    temperature:   response.data.current.temperature_2m,
+    humidity:      response.data.current.relative_humidity_2m,
+    wind_speed:    response.data.current.wind_speed_10m,
+    time:          response.data.current.time,
     precipitation: response.data.daily.precipitation_sum[0],
-    temp_max: response.data.daily.temperature_2m_max[0],
-    temp_min: response.data.daily.temperature_2m_min[0]
+    temp_max:      response.data.daily.temperature_2m_max[0],
+    temp_min:      response.data.daily.temperature_2m_min[0]
   }
 
   cache.set(key, weather)
